@@ -1,4 +1,3 @@
-<html lang="en">
 
 <head>
   <meta charset="UTF-8" />
@@ -168,4 +167,3 @@
   <canvas id="prerender" width="192" height="64" style="display: none;"></canvas>
 
 </body>
-</html>
