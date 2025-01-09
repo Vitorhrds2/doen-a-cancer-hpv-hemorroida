@@ -1,1 +1,172 @@
-# doen-a-cancer-hpv-hemorroida
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Document</title>
+  <script src="https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js"></script>
+  <script type="module">
+    import { Pane } from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js';
+
+    const videos = {
+      Synthwave: "https://assets.codepen.io/907471/video.mp4",
+      Mouse: "https://assets.codepen.io/907471/mouse.mp4",
+      Rainbow: "https://gtemp1.promeai.pro/promeai/i2v/i2v/2025/01/09/631908768307141.mp4?Expires=1737015826&KeyName=promeai-i&Signature=oiWv_AmimK7Ua0Miyy4Ba9dVTU0=",
+      Dancer: "https://assets.codepen.io/907471/dancer.mp4"
+    };
+
+    const video = document.getElementById("input");
+    const canvas = document.getElementById("prerender");
+    const output = document.getElementById("output");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+    const charsFixed = [
+      "_", ".", ",", "-", "=", "+", ":", ";", "c", "b", "a", "!",
+      "?", "0", "1", "2", "3", "4", "5", "6", "7", ["9", "8"],
+      ["✚", "✚", "✚", "✚", "✚", "⚛︎"], ["☺︎", "☹︎"], "☀︎",
+      ["@", "#"], ["X", "Y", "Z"], "'"
+    ];
+
+    let chars = [...charsFixed];
+    let charsLength = chars.length;
+    const MAX_COLOR_INDEX = 255;
+
+    const updateCanvas = () => {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.drawImage(video, 0, 0, w, h);
+      const data = ctx.getImageData(0, 0, w, h).data;
+      let outputText = "";
+
+      for (let y = 0; y < h; y++) {
+        let row = "";
+        for (let x = 0; x < w; x++) {
+          const idx = (x + y * w) * 4;
+          const [r, g, b] = data.slice(idx, idx+3);
+          const c = (r + g + b) / 3;
+          const charIndex = Math.floor((charsLength * ((c * 100) / MAX_COLOR_INDEX)) / 100);
+          const result = chars[charIndex];
+          const char = Array.isArray(result)
+            ? result[Math.floor(Math.random() * result.length)]
+            : result;
+          row += `<span style="color: rgb(${r}, ${g}, ${b});">${char ?? "&nbsp;"}</span>`;
+        }
+        outputText += `<div>${row}</div>`;
+      }
+      output.innerHTML = outputText;
+      output.style.setProperty("--color", `rgb(${data[0]}, ${data[1]}, ${data[2]})`);
+
+      // Solicitar o próximo frame de animação
+      requestAnimationFrame(updateCanvas);
+    };
+
+    // Configurações e botão Play
+    const config = {
+      speed: 1,
+      zoom: 60,
+      isolation: 0,
+      brightness: 1,
+      play: false
+    };
+
+    const playBtn = document.getElementById("play");
+    playBtn.onclick = () => {
+      config.play = !config.play;
+      if (config.play) {
+        video.play();
+        requestAnimationFrame(updateCanvas);
+      } else {
+        video.pause();
+      }
+    };
+    playBtn.click();
+
+    // Remover chamada automática à requestAnimationFrame para não iniciar de imediato
+    // Se quiser iniciar sozinho, basta descomentar abaixo:
+    // video.play();
+    // requestAnimationFrame(updateCanvas);
+
+    // Remova ou comente o setTimeout se não quiser acionar o play automaticamente após 3 segundos
+    // setTimeout(() => {
+    //     playBtn.click();
+    // }, 3000);
+
+  </script>
+</head>
+
+<body>
+
+  <style>
+    :root {
+      --color-primary: #ee75d2;
+      --color-secondary: #75d8ee;
+      --color-tertiary: #deee75;
+      --color-quaternary: #9375ee;
+      --color-surface: #271c22;
+      --brightness: 1;
+    }
+
+    #output {
+      position: relative;
+      text-align: center;
+      border-radius: 2rem;
+      font-family: "SF Mono", monospace;
+      overflow: hidden;
+      filter: drop-shadow(0 0 10rem color-mix(in srgb, var(--color), transparent 20%)) brightness(var(--brightness));
+      transition: filter 0.3s linear;
+      white-space: nowrap;
+      background: black;
+    }
+
+    #output div,
+    #output span {
+      white-space: nowrap;
+    }
+
+    #input,
+    #prerender {
+      display: none;
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    :root {
+      font-size: 60%;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      background-color: color-mix(in srgb, var(--color-surface), black 40%);
+      color: var(--color-primary);
+      overflow: hidden;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+  </style>
+
+  <button id="play" style="display: none;">Play</button>
+  <div id="output"></div>
+
+  <video
+  id="input"
+  muted
+  loop
+  playsinline
+    crossorigin="anonymous"
+    style="display: none;"
+  >
+    <source
+      src="https://gtemp1.promeai.pro/promeai/i2v/i2v/2025/01/09/631908768307141.mp4?Expires=1737015826&KeyName=promeai-i&Signature=oiWv_AmimK7Ua0Miyy4Ba9dVTU0="
+      type="video/mp4"
+    />
+  </video>
+
+  <canvas id="prerender" width="192" height="64" style="display: none;"></canvas>
+
+</body>
+</html>
